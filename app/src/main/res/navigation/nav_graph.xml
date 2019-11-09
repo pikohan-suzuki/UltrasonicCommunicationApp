@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_graph"
+    app:startDestination="@id/sendFragment">
+
+    <fragment
+        android:id="@+id/sendFragment"
+        android:name="com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.send.SendFragment"
+        android:label="SendFragment" >
+        <action
+            android:id="@+id/action_sendFragment_to_receiveFragment"
+            app:destination="@id/receiveFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/receiveFragment"
+        android:name="com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.receive.ReceiveFragment"
+        android:label="ReceiveFragment" >
+        <action
+            android:id="@+id/action_receiveFragment_to_sendFragment"
+            app:destination="@id/sendFragment" />
+    </fragment>
+</navigation>
