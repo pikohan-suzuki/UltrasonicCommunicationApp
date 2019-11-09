@@ -25,8 +25,16 @@ class SendViewModel(repository: Repository): ViewModel(){
 
     var text = MutableLiveData<String>()
 
+    private var _hexText =MutableLiveData<String>()
+    val hexText :LiveData<String> = _hexText
+
     var _sendEvent = MutableLiveData<Event<Boolean>>(Event(false))
     val sendEvent :LiveData<Event<Boolean>> = _sendEvent
+
+    var _openReceiveEvent = MutableLiveData<Event<Boolean>>(Event(false))
+    val openReceiveEvent :LiveData<Event<Boolean>> = _openReceiveEvent
+
+    var isAbleToClickSendButton  = MutableLiveData<Boolean>(true)
 
     fun onSendButtonClicked(){
 
@@ -34,14 +42,19 @@ class SendViewModel(repository: Repository): ViewModel(){
             val mAudioTrack = AudioTrack(STREM_TYPE, SAMPLE_RATE_IN_HZ, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE, MODE)
 
             viewModelScope.launch(Dispatchers.IO) {
+
+                isAbleToClickSendButton.postValue(false)
+
                 val byteArray = text.value!!.toByteArray()
                 Log.d("BYTE", byteArray.contentToString())
                 val hexList = mutableListOf<Int>()
-                for (index in byteArray.indices) {
-                    hexList.add(byteArray[index].toInt().ushr(4).and(0x0f))
-                    hexList.add(byteArray[index].toInt().and(0x0f))
+                for (value in byteArray) {
+                    hexList.add(value.toInt().ushr(4).and(0x0f))
+                    hexList.add(value.toInt().and(0x0f))
                 }
+                _hexText.postValue(hexList.toString())
                 Log.d("BYTE", hexList.toString())
+
 
                 val soundGenerator = SoundGenerator(hexList)
                 val soundDoubleArray = soundGenerator.getSoundData(200, 44100)
@@ -57,10 +70,16 @@ class SendViewModel(repository: Repository): ViewModel(){
                 Log.d("SEND","End sending.")
                 mAudioTrack.stop()
                 mAudioTrack.flush()
+
+                isAbleToClickSendButton.postValue(true)
                 //_sendEvent.value = Event(true)
             }
         }else{
             Log.d("SEND","failed: text is null or empty")
         }
+    }
+
+    fun onMoveToReceiveButtonClicked(){
+        _openReceiveEvent.value = Event(true)
     }
 }
