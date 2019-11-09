@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.data.Constant
 import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.data.repository.Repository
 import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.util.Event
 import kotlinx.coroutines.Dispatchers
@@ -55,9 +56,18 @@ class SendViewModel(repository: Repository): ViewModel(){
                 _hexText.postValue(hexList.toString())
                 Log.d("BYTE", hexList.toString())
 
+                //add space between same values.
+                val hexListWithSpace = mutableListOf<Int>()
+                for(i in 0 until hexList.size-1){
+                    hexListWithSpace.add(hexList[i])
+                    if(hexList[i] == hexList[i+1]){
+                        hexListWithSpace.add(Constant.SPACE)
+                    }
+                }
+                hexListWithSpace.add(hexList.last())
 
-                val soundGenerator = SoundGenerator(hexList)
-                val soundDoubleArray = soundGenerator.getSoundData(200, 44100)
+                val soundGenerator = SoundGenerator(hexListWithSpace)
+                val soundDoubleArray = soundGenerator.getSoundData(Constant.SOUND_LENGTH, 44100)
                 val soundShortList = mutableListOf<Short>()
                 for(dlValue in soundDoubleArray){
                     soundShortList.add((dlValue * Short.MAX_VALUE).toShort())
