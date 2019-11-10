@@ -9,8 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.databinding.FragmentReceiveBinding
 import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.databinding.FragmentSendBinding
+import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.util.EventObserver
 import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.util.getViewModelFactory
 
 class SendFragment :Fragment(){
@@ -35,9 +37,20 @@ class SendFragment :Fragment(){
         super.onActivityCreated(savedInstanceState)
 
         onSendEvent()
+        openReceive()
     }
 
     private fun onSendEvent(){
 
+    }
+
+    private fun openReceive(){
+        viewModel.openReceiveEvent.observe(this,EventObserver{
+            if(it) {
+                val action = SendFragmentDirections
+                    .actionSendFragmentToReceiveFragment()
+                findNavController().navigate(action)
+            }
+        })
     }
 }
