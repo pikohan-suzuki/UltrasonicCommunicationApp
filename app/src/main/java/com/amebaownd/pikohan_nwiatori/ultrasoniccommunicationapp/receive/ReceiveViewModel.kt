@@ -11,15 +11,10 @@ import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.fft.FFT4g
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.max
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.amebaownd.pikohan_nwiatori.ultrasoniccommunicationapp.data.Constant
 import java.lang.IllegalArgumentException
-import kotlin.math.abs
-
 
 class ReceiveViewModel(repository: Repository) : ViewModel() {
 
@@ -67,6 +62,7 @@ class ReceiveViewModel(repository: Repository) : ViewModel() {
         )
     }
 
+    @ExperimentalStdlibApi
     fun onReceiveButtonClicked() {
         Log.d("RECEIVE", "START ${System.currentTimeMillis()}")
         mAudioRecord.startRecording()
@@ -109,9 +105,9 @@ class ReceiveViewModel(repository: Repository) : ViewModel() {
 
 
                 val hz = (resol * max_i).toInt()
-                if (startFlg && hz < 4500) {
+                if (startFlg && hz < Constant.HZ_0-100) {
                     isRecording = false
-                } else if (!startFlg && hz >= 4500) {
+                } else if (!startFlg && hz >= Constant.HZ_0-100) {
                     startFlg = true
                 }
                 if (startFlg) {
@@ -120,11 +116,21 @@ class ReceiveViewModel(repository: Repository) : ViewModel() {
                 }
             }
             mAudioRecord.stop()
-            mAudioRecord.release()
+            //mAudioRecord.release()
 
             val hzData = samplingData(receivedData)
             val hexData = getHexFromHzList(hzData)
             Log.d("RECEIVE", "receivedData : $hexData")
+
+            val byteDataList = mutableListOf<Byte>()
+            for(i in hexData.indices step 2){
+                if(i+1 < hexData.size){
+                    val byte = (hexData[i].shl(4) or hexData[i+1]).toByte()
+                    byteDataList.add(byte)
+                }
+            }
+            val receivedString =byteDataList.toByteArray().decodeToString()
+            _receivedText.postValue(receivedString)
 //            Log.d("RECEIVE", "receivedData : $receivedData")
             Log.d("RECEIVE", "END ${System.currentTimeMillis()}")
         }
@@ -152,30 +158,31 @@ class ReceiveViewModel(repository: Repository) : ViewModel() {
     private fun getHexFromHzList(hzList: List<Int>): List<Int> {
         val hexList = mutableListOf<Int>()
         for (hz in hzList) {
-            hexList.add(
-                when {
-                    hz in 4750 until 5250 -> 0
-                    hz in 5250 until 5750 -> 1
-                    hz in 5750 until 6250 -> 2
-                    hz in 6250 until 6750 -> 3
-                    hz in 6750 until 7250 -> 4
-                    hz in 7250 until 7750 -> 5
-                    hz in 7750 until 8250 -> 6
-                    hz in 8250 until 8750 -> 7
-                    hz in 8750 until 9250 -> 8
-                    hz in 9250 until 9750 -> 9
-                    hz in 9750 until 10250 -> 10
-                    hz in 10250 until 10750 -> 11
-                    hz in 10750 until 11250 -> 12
-                    hz in 11250 until 11750 -> 13
-                    hz in 11750 until 12250 -> 14
-                    hz in 12250 until 12750 -> 15
-                    hz in 14750 until 15250 -> Constant.SPACE
-                    else -> throw IllegalArgumentException("unknown hz data $hz")
+
+              val hex=  when (hz) {
+                    in Constant.HZ_0_INDICES -> 0
+                    in Constant.HZ_1_INDICES -> 1
+                    in Constant.HZ_2_INDICES -> 2
+                    in Constant.HZ_3_INDICES -> 3
+                    in Constant.HZ_4_INDICES -> 4
+                    in Constant.HZ_5_INDICES -> 5
+                    in Constant.HZ_6_INDICES -> 6
+                    in Constant.HZ_7_INDICES -> 7
+                    in Constant.HZ_8_INDICES -> 8
+                    in Constant.HZ_9_INDICES -> 9
+                    in Constant.HZ_A_INDICES -> 10
+                    in Constant.HZ_B_INDICES -> 11
+                    in Constant.HZ_C_INDICES -> 12
+                    in Constant.HZ_D_INDICES -> 13
+                    in Constant.HZ_E_INDICES -> 14
+                    in Constant.HZ_F_INDICES -> 15
+                    in Constant.HZ_SPACE_INDICES -> Constant.SPACE_CODE
+                    else -> Constant.HZ_UNKNOWN
                 }
-            )
+            if(hex != Constant.HZ_UNKNOWN)
+                hexList.add(hex)
         }
-        hexList.removeAll{it==Constant.SPACE}
+        hexList.removeAll{it== Constant.SPACE_CODE}
         return hexList
     }
 }
