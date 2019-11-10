@@ -61,7 +61,7 @@ class SendViewModel(repository: Repository): ViewModel(){
                 for(i in 0 until hexList.size-1){
                     hexListWithSpace.add(hexList[i])
                     if(hexList[i] == hexList[i+1]){
-                        hexListWithSpace.add(Constant.SPACE)
+                        hexListWithSpace.add(Constant.SPACE_CODE)
                     }
                 }
                 hexListWithSpace.add(hexList.last())
